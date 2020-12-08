@@ -1,0 +1,11 @@
+provider: ~
+
+contexts:
+  firefly: ~
+  firefly_messaging: ~
+
+environments:
+  local: ~
+  dev: ~
+  staging: ~
+  prod: ~
