@@ -12,3 +12,17 @@
 #  You should have received a copy of the GNU General Public License along with Firefly. If not, see
 #  <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import List
+
+import firefly as ff
+
+from .contact import Contact
+
+
+class AudienceMember(ff.Entity):
+    id: str = ff.id_()
+    contact: Contact = ff.required()
+    tags: List[str] = ff.list_()
+    meta: dict = ff.dict_()

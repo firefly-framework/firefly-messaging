@@ -12,3 +12,26 @@
 #  You should have received a copy of the GNU General Public License along with Firefly. If not, see
 #  <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import List
+
+import firefly as ff
+
+import firefly_messaging.domain as domain
+
+
+class Campaign(ff.Entity):
+    id: str = ff.id_()
+    name: str = ff.required()
+    members: List[domain.AudienceMember] = ff.list_()
+
+    def get_member_by_contact_id(self, contact_id: str):
+        for member in self.members:
+            if member.contact.id == contact_id:
+                return member
+
+    def add_contact(self, contact: domain.Contact, **kwargs):
+        if self.get_member_by_contact_id(contact.id) is None:
+            kwargs.update({'contact': contact})
+            self.members.append(domain.AudienceMember(**ff.build_argument_list(kwargs, domain.AudienceMember)))

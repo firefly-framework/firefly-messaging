@@ -12,3 +12,19 @@
 #  You should have received a copy of the GNU General Public License along with Firefly. If not, see
 #  <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+
+import firefly_messaging.domain as domain
+import firefly as ff
+
+
+class EmailService(ff.DomainService, ABC):
+    @abstractmethod
+    def add_tag_to_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
+        pass
+
+    @abstractmethod
+    def remove_tag_from_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
+        pass

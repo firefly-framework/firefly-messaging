@@ -12,3 +12,15 @@
 #  You should have received a copy of the GNU General Public License along with Firefly. If not, see
 #  <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from datetime import datetime
+
+import firefly as ff
+
+
+@ff.rest.crud()
+class Contact(ff.AggregateRoot):
+    sub: str = ff.id_()
+    email: str = ff.optional(index=True)
+    deleted_on: datetime = ff.optional()

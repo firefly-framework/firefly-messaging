@@ -12,3 +12,24 @@
 #  You should have received a copy of the GNU General Public License along with Firefly. If not, see
 #  <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from mailchimp3 import MailChimp
+
+from .abstract_email_service import AbstractEmailService
+from ... import domain as domain
+
+
+class MailchimpEmailService(AbstractEmailService):
+    def add_tag_to_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
+        super().add_tag_to_audience_member(tag, audience, contact)
+        client = self._get_client(audience)
+        print(client.lists.get('17d43e97d5'))
+        # client.lists.members.get()
+
+    def remove_tag_from_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
+        super().add_tag_to_audience_member(tag, audience, contact)
+        client = self._get_client(audience)
+
+    def _get_client(self, audience: domain.Audience):
+        return MailChimp(mc_api=audience.meta['mc_api_key'])

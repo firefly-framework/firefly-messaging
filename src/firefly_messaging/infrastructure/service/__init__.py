@@ -12,3 +12,5 @@
 #  You should have received a copy of the GNU General Public License along with Firefly. If not, see
 #  <http://www.gnu.org/licenses/>.
 
+from .abstract_email_service import AbstractEmailService
+from .mailchimp_email_service import MailchimpEmailService

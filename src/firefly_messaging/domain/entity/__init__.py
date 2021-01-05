@@ -12,3 +12,8 @@
 #  You should have received a copy of the GNU General Public License along with Firefly. If not, see
 #  <http://www.gnu.org/licenses/>.
 
+from .audience import Audience
+from .audience_member import AudienceMember
+from .campaign import Campaign
+from .contact import Contact
+from .tenant import Tenant

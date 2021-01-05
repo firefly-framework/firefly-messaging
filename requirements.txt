@@ -1,0 +1,4 @@
+mailchimp3==3.0.14
+firefly-dependency-injection==1.0.0
+firefly-framework==1.1.12
+.

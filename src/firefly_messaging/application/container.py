@@ -12,3 +12,11 @@
 #  You should have received a copy of the GNU General Public License along with Firefly. If not, see
 #  <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+import firefly_di as di
+import firefly_messaging.infrastructure as infra
+
+
+class Container(di.Container):
+    mailchimp_email_service: infra.MailchimpEmailService
