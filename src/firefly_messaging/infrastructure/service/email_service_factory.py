@@ -14,15 +14,21 @@
 
 from __future__ import annotations
 
-from abc import ABC
-
+import firefly_di as di
 import firefly as ff
 
 import firefly_messaging.domain as domain
+from firefly_messaging.domain import EmailService
 
 
-class AbstractEmailService(domain.EmailService, ABC):
-    _registry: ff.Registry = None
+class EmailServiceFactory(domain.EmailServiceFactory):
+    _container: di.Container = None
 
-    def add_tag_to_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
-        audience.get_member_by_contact(contact).tags.append(tag)
+    def __call__(self, service: str = None) -> EmailService:
+        if service is None:
+            return self._container.email_service
+
+        try:
+            return getattr(self._container, f'{service}_email_service')
+        except AttributeError:
+            raise ff.ConfigurationError(f'No service registered for {service}')

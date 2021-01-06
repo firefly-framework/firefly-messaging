@@ -21,6 +21,10 @@ import firefly as ff
 
 @ff.rest.crud()
 class Contact(ff.AggregateRoot):
-    sub: str = ff.id_()
+    id: str = ff.id_()
+    sub: str = ff.optional(index=True)
     email: str = ff.optional(index=True)
+    given_name: str = ff.optional()
+    family_name: str = ff.optional()
+    birthdate: datetime = ff.optional()
     deleted_on: datetime = ff.optional()

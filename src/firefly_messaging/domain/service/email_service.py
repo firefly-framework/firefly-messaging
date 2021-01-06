@@ -22,6 +22,10 @@ import firefly as ff
 
 class EmailService(ff.DomainService, ABC):
     @abstractmethod
+    def add_contact_to_audience(self, contact: domain.Contact, audience: domain.Audience):
+        pass
+
+    @abstractmethod
     def add_tag_to_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
         pass
 

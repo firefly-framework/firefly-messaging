@@ -13,3 +13,4 @@
 #  <http://www.gnu.org/licenses/>.
 
 from .email_service import EmailService
+from .email_service_factory import EmailServiceFactory

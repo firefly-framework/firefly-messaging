@@ -16,20 +16,34 @@ from __future__ import annotations
 
 from mailchimp3 import MailChimp
 
-from .abstract_email_service import AbstractEmailService
 from ... import domain as domain
 
 
-class MailchimpEmailService(AbstractEmailService):
-    def add_tag_to_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
-        super().add_tag_to_audience_member(tag, audience, contact)
+class MailchimpEmailService(domain.EmailService):
+    def add_contact_to_audience(self, contact: domain.Contact, audience: domain.Audience):
         client = self._get_client(audience)
-        print(client.lists.get('17d43e97d5'))
-        # client.lists.members.get()
+        member = client.lists.members.create(audience.meta['mc_id'], {
+            'email_address': contact.email,
+            'status': 'subscribed',
+        })
+        contact.meta['mc_id'] = member['id']
+
+    def add_tag_to_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
+        client = self._get_client(audience)
+        client.lists.members.tags.update(
+            audience.meta['mc_id'],
+            audience.get_member_by_contact(contact).meta['mc_id'],
+            {'tags': [{'name': tag, 'status': 'active'}]}
+        )
 
     def remove_tag_from_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
-        super().add_tag_to_audience_member(tag, audience, contact)
         client = self._get_client(audience)
+        client.lists.members.tags.update(
+            audience.meta['mc_id'],
+            audience.get_member_by_contact(contact).meta['mc_id'],
+            {'tags': [{'name': tag, 'status': 'inactive'}]}
+        )
 
-    def _get_client(self, audience: domain.Audience):
+    @staticmethod
+    def _get_client(audience: domain.Audience):
         return MailChimp(mc_api=audience.meta['mc_api_key'])

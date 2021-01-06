@@ -14,12 +14,11 @@
 
 from __future__ import annotations
 
-import firefly_di as di
-import firefly_messaging.domain as domain
-import firefly_messaging.infrastructure as infra
+from abc import ABC, abstractmethod
+from .email_service import EmailService
 
 
-class Container(di.Container):
-    email_service_factory: domain.EmailServiceFactory = infra.EmailServiceFactory
-    email_service: infra.EmailService = infra.EmailService
-    mailchimp_email_service: infra.MailchimpEmailService = infra.MailchimpEmailService
+class EmailServiceFactory(ABC):
+    @abstractmethod
+    def __call__(self, service: str = None) -> EmailService:
+        pass

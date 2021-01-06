@@ -20,6 +20,8 @@ import firefly as ff
 
 import firefly_messaging.domain as domain
 
+MAILCHIMP = 'mailchimp'
+
 
 class Audience(ff.AggregateRoot):
     id: str = ff.id_()
@@ -27,6 +29,7 @@ class Audience(ff.AggregateRoot):
     tenant: domain.Tenant = ff.required()
     members: List[domain.AudienceMember] = ff.list_()
     campaigns: List[domain.Campaign] = ff.list_()
+    services: list = ff.list_(validators=ff.IsOneOf((MAILCHIMP,)))
     meta: dict = ff.dict_()
 
     def get_member_by_contact(self, contact: domain.Contact) -> Optional[domain.AudienceMember]:

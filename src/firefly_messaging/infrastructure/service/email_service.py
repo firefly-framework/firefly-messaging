@@ -14,12 +14,19 @@
 
 from __future__ import annotations
 
-import firefly_di as di
+import firefly as ff
+
 import firefly_messaging.domain as domain
-import firefly_messaging.infrastructure as infra
 
 
-class Container(di.Container):
-    email_service_factory: domain.EmailServiceFactory = infra.EmailServiceFactory
-    email_service: infra.EmailService = infra.EmailService
-    mailchimp_email_service: infra.MailchimpEmailService = infra.MailchimpEmailService
+class EmailService(domain.EmailService):
+    _registry: ff.Registry = None
+
+    def add_contact_to_audience(self, contact: domain.Contact, audience: domain.Audience):
+        audience.add_member(contact)
+
+    def add_tag_to_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
+        audience.get_member_by_contact(contact).tags.append(tag)
+
+    def remove_tag_from_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
+        audience.get_member_by_contact(contact).tags.remove(tag)
