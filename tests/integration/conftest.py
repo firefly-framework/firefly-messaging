@@ -12,34 +12,30 @@
 #  You should have received a copy of the GNU General Public License along with Firefly. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-import setuptools
-from setuptools.command.develop import develop
-from setuptools.command.install import install
-
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+import pytest
 
 
-setuptools.setup(
-    name='firefly-messaging',
-    version='0.1.6',
-    author="",
-    author_email="",
-    description="Put project description here.",
-    long_description=long_description,
-    url="",
-    entry_points={
-        'console_scripts': ['firefly=firefly.presentation.cli:main']
-    },
-    install_requires=[
-        'firefly-dependency-injection>=0.1',
-        'firefly-framework>=1.1.16',
-        'mailchimp3>=3.0.14'
-    ],
-    packages=setuptools.PEP420PackageFinder.find('src'),
-    package_dir={'': 'src'},
-    classifiers=[
-        "Programming Language :: Python :: 3.7",
-        "Operating System :: OS Independent",
-    ]
-)
+@pytest.fixture(scope='session')
+def config():
+    return {
+        'contexts': {
+            'firefly_messaging': {
+                'is_extension': True,
+            },
+            'messaging': {
+                'extends': 'firefly_messaging',
+                'storage': {
+                    'services': {
+                        'rdb': {
+                            'connection': {
+                                'driver': 'sqlite',
+                                'host': ':memory:'
+                                # 'host': '/tmp/todo.db'
+                            }
+                        },
+                    },
+                    'default': 'rdb',
+                },
+            },
+        },
+    }

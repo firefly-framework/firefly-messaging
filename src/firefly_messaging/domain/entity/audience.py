@@ -34,7 +34,7 @@ class Audience(ff.AggregateRoot):
 
     def get_member_by_contact(self, contact: domain.Contact) -> Optional[domain.AudienceMember]:
         for member in self.members:
-            if member.contact == contact.id:
+            if member.contact.id == contact.id:
                 return member
 
     def get_campaign(self, id_: str) -> Optional[domain.Campaign]:
@@ -44,4 +44,4 @@ class Audience(ff.AggregateRoot):
 
     def add_member(self, contact: domain.Contact):
         if self.get_member_by_contact(contact) is None:
-            self.members.append(domain.AudienceMember(contact=contact.id))
+            self.members.append(domain.AudienceMember(contact=contact))
