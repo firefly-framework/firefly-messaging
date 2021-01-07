@@ -17,10 +17,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 import firefly_messaging.domain as domain
-import firefly as ff
 
 
-class EmailService(ff.DomainService, ABC):
+class EmailService(ABC):
     @abstractmethod
     def add_contact_to_audience(self, contact: domain.Contact, audience: domain.Audience):
         pass
