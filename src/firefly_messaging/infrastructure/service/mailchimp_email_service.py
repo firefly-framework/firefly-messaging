@@ -26,7 +26,7 @@ class MailchimpEmailService(domain.EmailService):
             'email_address': contact.email,
             'status': 'subscribed',
         })
-        contact.meta['mc_id'] = member['id']
+        audience.get_member_by_contact(contact).meta['mc_id'] = member['id']
 
     def add_tag_to_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
         client = self._get_client(audience)
