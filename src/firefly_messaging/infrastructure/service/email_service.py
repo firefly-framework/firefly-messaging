@@ -21,12 +21,25 @@ import firefly_messaging.domain as domain
 
 class EmailService(domain.EmailService):
     _registry: ff.Registry = None
+    _email_service_factory: domain.EmailServiceFactory = None
 
     def add_contact_to_audience(self, contact: domain.Contact, audience: domain.Audience):
+        if audience.get_member_by_contact(contact) is not None:
+            return
         audience.add_member(contact)
+        for service in audience.services:
+            self._email_service_factory(service).add_contact_to_audience(contact, audience)
 
     def add_tag_to_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
+        if tag in audience.get_member_by_contact(contact).tags:
+            return
         audience.get_member_by_contact(contact).tags.append(tag)
+        for service in audience.services:
+            self._email_service_factory(service).add_tag_to_audience_member(tag, audience, contact)
 
     def remove_tag_from_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
+        if tag not in audience.get_member_by_contact(contact).tags:
+            return
         audience.get_member_by_contact(contact).tags.remove(tag)
+        for service in audience.services:
+            self._email_service_factory(service).remove_tag_from_audience_member(tag, audience, contact)

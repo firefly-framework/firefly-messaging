@@ -21,7 +21,7 @@ import firefly_messaging.domain as domain
 @ff.command_handler()
 class AddContactToAudience(ff.ApplicationService):
     _registry: ff.Registry = None
-    _email_service_factory: domain.EmailServiceFactory = None
+    _email_service: domain.EmailService = None
 
     def __call__(self, contact_id: str, audience_id: str, **kwargs):
         contact = self._registry(domain.Contact).find(contact_id)
@@ -31,15 +31,13 @@ class AddContactToAudience(ff.ApplicationService):
         if audience is None:
             raise ff.NotFound('Audience not found')
 
-        self._email_service_factory().add_contact_to_audience(contact, audience)
-        for service in audience.services:
-            self._email_service_factory(service).add_contact_to_audience(contact, audience)
+        self._email_service.add_contact_to_audience(contact, audience)
 
 
 @ff.command_handler()
 class AddTagToAudienceMember(ff.ApplicationService):
     _registry: ff.Registry = None
-    _email_service_factory: domain.EmailServiceFactory = None
+    _email_service: domain.EmailService = None
 
     def __call__(self, tag: str, audience_id: str, contact_id: str, **kwargs):
         contacts = self._registry(domain.Contact)
@@ -53,15 +51,13 @@ class AddTagToAudienceMember(ff.ApplicationService):
             self.info('No audience found with id: %s', audience_id)
             return ff.NotFound()
 
-        self._email_service_factory().add_tag_to_audience_member(tag, audience, contact)
-        for service in audience.services:
-            self._email_service_factory(service).add_tag_to_audience_member(tag, audience, contact)
+        self._email_service.add_tag_to_audience_member(tag, audience, contact)
 
 
 @ff.command_handler()
 class RemoveTagFromAudienceMember(ff.ApplicationService):
     _registry: ff.Registry = None
-    _email_service_factory: domain.EmailServiceFactory = None
+    _email_service: domain.EmailService = None
 
     def __call__(self, tag: str, audience_id: str, contact_id: str, **kwargs):
         contacts = self._registry(domain.Contact)
@@ -75,6 +71,4 @@ class RemoveTagFromAudienceMember(ff.ApplicationService):
             self.info('No audience found with id: %s', audience_id)
             return ff.NotFound()
 
-        self._email_service_factory().remove_tag_from_audience_member(tag, audience, contact)
-        for service in audience.services:
-            self._email_service_factory(service).remove_tag_from_audience_member(tag, audience, contact)
+        self._email_service.remove_tag_from_audience_member(tag, audience, contact)
