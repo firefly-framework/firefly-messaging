@@ -11,6 +11,7 @@
 #
 #  You should have received a copy of the GNU General Public License along with Firefly. If not, see
 #  <http://www.gnu.org/licenses/>.
+
 from datetime import datetime
 
 import pytest
@@ -29,6 +30,52 @@ def test_add_contact_to_audience(system_bus, audience, contact, registry):
 
     member = audience.get_member_by_contact(contact)
     assert member.contact.id == contact.id
+
+
+def test_add_tag_to_audience_member(system_bus, audience, contact, registry):
+    system_bus.invoke('messaging.AddContactToAudience', {
+        'contact_id': contact.id,
+        'audience_id': audience.id,
+    })
+
+    system_bus.invoke('messaging.AddTagToAudienceMember', {
+        'tag': 'foo',
+        'contact_id': contact.id,
+        'audience_id': audience.id,
+    })
+
+    audience: domain.Audience = registry(domain.Audience)[0]
+    contact: domain.Contact = registry(domain.Contact)[0]
+
+    member = audience.get_member_by_contact(contact)
+
+    assert 'foo' in member.tags
+
+
+def test_remove_tag_from_audience_member(system_bus, audience, contact, registry):
+    system_bus.invoke('messaging.AddContactToAudience', {
+        'contact_id': contact.id,
+        'audience_id': audience.id,
+    })
+
+    system_bus.invoke('messaging.AddTagToAudienceMember', {
+        'tag': 'foo',
+        'contact_id': contact.id,
+        'audience_id': audience.id,
+    })
+
+    system_bus.invoke('messaging.RemoveTagFromAudienceMember', {
+        'tag': 'foo',
+        'contact_id': contact.id,
+        'audience_id': audience.id,
+    })
+
+    audience: domain.Audience = registry(domain.Audience)[0]
+    contact: domain.Contact = registry(domain.Contact)[0]
+
+    member = audience.get_member_by_contact(contact)
+
+    assert 'foo' not in member.tags
 
 
 @pytest.fixture(scope='function')
