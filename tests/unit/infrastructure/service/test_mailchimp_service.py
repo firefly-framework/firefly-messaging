@@ -75,6 +75,30 @@ def test_add_contact_to_audience_with_existing_merge_fields(sut, mailchimp_clien
     )
 
 
+def test_add_contact_to_audience_with_extra_merge_fields(sut, mailchimp_client, audience, contact):
+    mailchimp_client.lists.members.create.return_value = {'id': 'abc123'}
+    mailchimp_client.lists.merge_fields.all.return_value = {
+        'merge_fields': [
+            {'name': 'First Name', 'tag': 'FNAME'},
+            {'name': 'Last Name', 'tag': 'LNAME'},
+            {'name': 'Address', 'tag': 'MERGE1'},
+        ]
+    }
+    sut.add_contact_to_audience(contact, audience, meta={'First Name': 'Bob', 'Last Name': 'Loblaw'})
+
+    mailchimp_client.lists.members.create.assert_called_with(
+        audience.meta['mc_id'],
+        {
+            'email_address': contact.email,
+            'status': 'subscribed',
+            'merge_fields': {
+                'FNAME': 'Bob',
+                'LNAME': 'Loblaw'
+            }
+        },
+    )
+
+
 def test_add_contact_to_audience_with_non_existent_merge_fields(sut, mailchimp_client, audience, contact):
     mailchimp_client.lists.members.create.return_value = {'id': 'abc123'}
     mailchimp_client.lists.merge_fields.all.return_value = {

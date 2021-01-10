@@ -71,7 +71,7 @@ class MailchimpEmailService(domain.EmailService):
                 if k not in names:
                     merge_fields[k] = self._create_merge_field(client, audience, k)
 
-        return {v: meta[k] for k, v in merge_fields.items()}
+        return {v: meta[k] for k, v in merge_fields.items() if k in meta}
 
     @staticmethod
     def _create_merge_field(client: MailChimp, audience: domain.Audience, name: str):
