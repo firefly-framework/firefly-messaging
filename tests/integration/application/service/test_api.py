@@ -32,6 +32,36 @@ def test_add_contact_to_audience(system_bus, audience, contact, registry):
     assert member.contact.id == contact.id
 
 
+def test_add_contact_to_audience_with_meta(system_bus, audience, contact, registry):
+    system_bus.invoke('messaging.AddContactToAudience', {
+        'contact_id': contact.id,
+        'audience_id': audience.id,
+        'meta': {
+            'my_key': 'my_value'
+        }
+    })
+
+    audience: domain.Audience = registry(domain.Audience)[0]
+    contact: domain.Contact = registry(domain.Contact)[0]
+
+    member = audience.get_member_by_contact(contact)
+    assert member.meta['my_key'] == 'my_value'
+
+
+def test_add_contact_to_audience_with_tags(system_bus, audience, contact, registry):
+    system_bus.invoke('messaging.AddContactToAudience', {
+        'contact_id': contact.id,
+        'audience_id': audience.id,
+        'tags': ['my_tag']
+    })
+
+    audience: domain.Audience = registry(domain.Audience)[0]
+    contact: domain.Contact = registry(domain.Contact)[0]
+
+    member = audience.get_member_by_contact(contact)
+    assert 'my_tag' in member.tags
+
+
 def test_add_tag_to_audience_member(system_bus, audience, contact, registry):
     system_bus.invoke('messaging.AddContactToAudience', {
         'contact_id': contact.id,
@@ -76,38 +106,3 @@ def test_remove_tag_from_audience_member(system_bus, audience, contact, registry
     member = audience.get_member_by_contact(contact)
 
     assert 'foo' not in member.tags
-
-
-@pytest.fixture(scope='function')
-def tenant(registry):
-    tenants = registry(domain.Tenant)
-    tenant = domain.Tenant(name='Firefly')
-    tenants.append(tenant)
-    tenants.commit()
-    return tenant
-
-
-@pytest.fixture(scope='function')
-def audience(registry, tenant):
-    audiences = registry(domain.Audience)
-    audience = domain.Audience(
-        name='My Audience',
-        tenant=tenant,
-    )
-    audiences.append(audience)
-    audiences.commit()
-    return audience
-
-
-@pytest.fixture(scope='function')
-def contact(registry):
-    contacts = registry(domain.Contact)
-    contact = domain.Contact(
-        email='foo@bar.com',
-        given_name='Bob',
-        family_name='Loblaw',
-        birthdate=datetime(year=1990, month=1, day=1)
-    )
-    contacts.append(contact)
-    contacts.commit()
-    return contact

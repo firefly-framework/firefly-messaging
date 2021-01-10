@@ -42,6 +42,12 @@ class Audience(ff.AggregateRoot):
             if campaign.id == id_:
                 return campaign
 
-    def add_member(self, contact: domain.Contact):
+    def add_member(self, contact: domain.Contact, meta: dict = None, tags: list = None):
         if self.get_member_by_contact(contact) is None:
-            self.members.append(domain.AudienceMember(contact=contact))
+            self.members.append(
+                domain.AudienceMember(
+                    contact=contact,
+                    meta=meta or {},
+                    tags=tags or []
+                )
+            )

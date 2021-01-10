@@ -21,7 +21,8 @@ import firefly_messaging.domain as domain
 
 class EmailService(ABC):
     @abstractmethod
-    def add_contact_to_audience(self, contact: domain.Contact, audience: domain.Audience):
+    def add_contact_to_audience(self, contact: domain.Contact, audience: domain.Audience, meta: dict = None,
+                                tags: list = None):
         pass
 
     @abstractmethod

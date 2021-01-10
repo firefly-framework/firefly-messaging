@@ -23,7 +23,7 @@ class AddContactToAudience(ff.ApplicationService):
     _registry: ff.Registry = None
     _email_service: domain.EmailService = None
 
-    def __call__(self, contact_id: str, audience_id: str, **kwargs):
+    def __call__(self, contact_id: str, audience_id: str, meta: dict = None, tags: list = None, **kwargs):
         contact = self._registry(domain.Contact).find(contact_id)
         if contact is None:
             raise ff.NotFound('Contact not found')
@@ -31,7 +31,7 @@ class AddContactToAudience(ff.ApplicationService):
         if audience is None:
             raise ff.NotFound('Audience not found')
 
-        self._email_service.add_contact_to_audience(contact, audience)
+        self._email_service.add_contact_to_audience(contact, audience, meta, tags)
 
 
 @ff.command_handler()

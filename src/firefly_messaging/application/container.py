@@ -22,4 +22,5 @@ import firefly_messaging.infrastructure as infra
 class Container(di.Container):
     email_service_factory: domain.EmailServiceFactory = infra.EmailServiceFactory
     email_service: domain.EmailService = infra.EmailService
+    mailchimp_client_factory: infra.MailchimpClientFactory = infra.MailchimpClientFactory
     mailchimp_email_service: infra.MailchimpEmailService = infra.MailchimpEmailService

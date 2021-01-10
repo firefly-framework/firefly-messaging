@@ -12,7 +12,11 @@
 #  You should have received a copy of the GNU General Public License along with Firefly. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-from .email_service import EmailService
-from .email_service_factory import EmailServiceFactory
-from .mailchimp_client_factory import MailchimpClientFactory
-from .mailchimp_email_service import MailchimpEmailService
+from __future__ import annotations
+
+from mailchimp3 import MailChimp
+
+
+class MailchimpClientFactory:
+    def __call__(self, api_key: str):
+        return MailChimp(mc_api=api_key)

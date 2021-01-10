@@ -23,12 +23,13 @@ class EmailService(domain.EmailService):
     _registry: ff.Registry = None
     _email_service_factory: domain.EmailServiceFactory = None
 
-    def add_contact_to_audience(self, contact: domain.Contact, audience: domain.Audience):
+    def add_contact_to_audience(self, contact: domain.Contact, audience: domain.Audience, meta: dict = None,
+                                tags: list = None):
         if audience.get_member_by_contact(contact) is not None:
             return
-        audience.add_member(contact)
+        audience.add_member(contact, meta, tags)
         for service in audience.services:
-            self._email_service_factory(service).add_contact_to_audience(contact, audience)
+            self._email_service_factory(service).add_contact_to_audience(contact, audience, meta, tags)
 
     def add_tag_to_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
         if tag in audience.get_member_by_contact(contact).tags:

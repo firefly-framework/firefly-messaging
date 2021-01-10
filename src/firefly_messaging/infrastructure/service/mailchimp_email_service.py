@@ -16,16 +16,32 @@ from __future__ import annotations
 
 from mailchimp3 import MailChimp
 
+from .mailchimp_client_factory import MailchimpClientFactory
 from ... import domain as domain
 
 
 class MailchimpEmailService(domain.EmailService):
-    def add_contact_to_audience(self, contact: domain.Contact, audience: domain.Audience):
+    _client_factory: MailchimpClientFactory = None
+
+    def add_contact_to_audience(self, contact: domain.Contact, audience: domain.Audience, meta: dict = None,
+                                tags: list = None):
         client = self._get_client(audience)
-        member = client.lists.members.create(audience.meta['mc_id'], {
+        payload = {
             'email_address': contact.email,
             'status': 'subscribed',
-        })
+        }
+
+        try:
+            payload['tags'] = [{'name': t, 'status': 'active'} for t in tags]
+        except TypeError:
+            pass
+
+        try:
+            payload['merge_fields'] = self._get_merge_fields(client, audience, meta)
+        except (TypeError, AttributeError):
+            pass
+
+        member = client.lists.members.create(audience.meta['mc_id'], payload)
         audience.get_member_by_contact(contact).meta['mc_id'] = member['id']
 
     def add_tag_to_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
@@ -44,6 +60,29 @@ class MailchimpEmailService(domain.EmailService):
             {'tags': [{'name': tag, 'status': 'inactive'}]}
         )
 
+    def _get_merge_fields(self, client: MailChimp, audience: domain.Audience, meta: dict, create: bool = True):
+        merge_fields = {
+            x['name']: x['tag'] for x in client.lists.merge_fields.all(audience.meta['mc_id'])['merge_fields']
+        }
+
+        if create is True:
+            names = list(merge_fields.keys())
+            for k, v in meta.items():
+                if k not in names:
+                    merge_fields[k] = self._create_merge_field(client, audience, k)
+
+        return {v: meta[k] for k, v in merge_fields.items()}
+
     @staticmethod
-    def _get_client(audience: domain.Audience):
-        return MailChimp(mc_api=audience.meta['mc_api_key'])
+    def _create_merge_field(client: MailChimp, audience: domain.Audience, name: str):
+        return client.lists.merge_fields.create(audience.meta['mc_id'], {
+                'default_value': '',
+                'help_text': '',
+                'name': name,
+                'public': True,
+                'required': False,
+                'type': 'text'
+        })['tag']
+
+    def _get_client(self, audience: domain.Audience):
+        return self._client_factory(audience.meta['mc_api_key'])
