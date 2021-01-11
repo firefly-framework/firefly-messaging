@@ -83,7 +83,7 @@ class MailchimpEmailService(domain.EmailService):
 
         try:
             datetime.fromisoformat(hint)
-            type_ = 'birthday' if name.lower().startswith('birth') else 'date'
+            type_ = 'date'
         except (ValueError, TypeError):
             pass
 

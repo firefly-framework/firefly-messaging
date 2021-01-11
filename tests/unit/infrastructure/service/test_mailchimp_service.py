@@ -175,7 +175,7 @@ def test_add_contact_to_audience_with_non_existent_merge_fields(sut, mailchimp_c
                     'name': 'birthdate',
                     'public': True,
                     'required': False,
-                    'type': 'birthday'
+                    'type': 'date'
                 }
             ),
             call(
