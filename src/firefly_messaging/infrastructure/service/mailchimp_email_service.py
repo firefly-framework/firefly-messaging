@@ -31,10 +31,8 @@ class MailchimpEmailService(domain.EmailService):
             'status': 'subscribed',
         }
 
-        try:
-            payload['tags'] = [{'name': t, 'status': 'active'} for t in tags]
-        except TypeError:
-            pass
+        if tags is not None and len(tags) > 0:
+            payload['tags'] = tags
 
         try:
             payload['merge_fields'] = self._get_merge_fields(client, audience, meta)

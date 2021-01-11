@@ -43,10 +43,7 @@ def test_add_contact_to_audience_with_tags(sut, mailchimp_client, audience, cont
         {
             'email_address': contact.email,
             'status': 'subscribed',
-            'tags': [
-                {'name': 'tag1', 'status': 'active'},
-                {'name': 'tag2', 'status': 'active'},
-            ]
+            'tags': ['tag1', 'tag2']
         },
     )
     assert audience.get_member_by_contact(contact).meta['mc_id'] == 'abc123'
