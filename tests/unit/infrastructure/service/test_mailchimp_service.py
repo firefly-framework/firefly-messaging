@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License along with Firefly. If not, see
 #  <http://www.gnu.org/licenses/>.
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 
 import pytest
 
@@ -106,9 +106,23 @@ def test_add_contact_to_audience_with_non_existent_merge_fields(sut, mailchimp_c
             {'name': 'Last Name', 'tag': 'LNAME'},
         ]
     }
-    mailchimp_client.lists.merge_fields.create.return_value = {'tag': 'MERGE5'}
+    mailchimp_client.lists.merge_fields.create.side_effect = [
+        {'tag': 'MERGE5'},
+        {'tag': 'MERGE6'},
+        {'tag': 'MERGE7'},
+        {'tag': 'MERGE8'},
+        {'tag': 'MERGE9'},
+    ]
     sut.add_contact_to_audience(
-        contact, audience, meta={'First Name': 'Bob', 'Last Name': 'Loblaw', 'customField': 'foobar'}
+        contact, audience, meta={
+            'First Name': 'Bob',
+            'Last Name': 'Loblaw',
+            'customField': 'foobar',
+            'customDate': '2021-01-01T00:00:00',
+            'birthdate': '2021-01-01T00:00:00',
+            'customFloat': 10.1,
+            'customInt': 10,
+        }
     )
 
     mailchimp_client.lists.members.create.assert_called_with(
@@ -120,21 +134,73 @@ def test_add_contact_to_audience_with_non_existent_merge_fields(sut, mailchimp_c
                 'FNAME': 'Bob',
                 'LNAME': 'Loblaw',
                 'MERGE5': 'foobar',
+                'MERGE6': '2021-01-01T00:00:00',
+                'MERGE7': '2021-01-01T00:00:00',
+                'MERGE8': 10.1,
+                'MERGE9': 10,
             },
             'skip_merge_validation': True,
         },
     )
 
-    mailchimp_client.lists.merge_fields.create.assert_called_with(
-        audience.meta['mc_id'],
-        {
-            'default_value': '',
-            'help_text': '',
-            'name': 'customField',
-            'public': True,
-            'required': False,
-            'type': 'text'
-        }
+    mailchimp_client.lists.merge_fields.create.assert_has_calls(
+        [
+            call(
+                audience.meta['mc_id'],
+                {
+                    'default_value': '',
+                    'help_text': '',
+                    'name': 'customField',
+                    'public': True,
+                    'required': False,
+                    'type': 'text'
+                }
+            ),
+            call(
+                audience.meta['mc_id'],
+                {
+                    'default_value': '',
+                    'help_text': '',
+                    'name': 'customDate',
+                    'public': True,
+                    'required': False,
+                    'type': 'date'
+                }
+            ),
+            call(
+                audience.meta['mc_id'],
+                {
+                    'default_value': '',
+                    'help_text': '',
+                    'name': 'birthdate',
+                    'public': True,
+                    'required': False,
+                    'type': 'birthday'
+                }
+            ),
+            call(
+                audience.meta['mc_id'],
+                {
+                    'default_value': '',
+                    'help_text': '',
+                    'name': 'customFloat',
+                    'public': True,
+                    'required': False,
+                    'type': 'number'
+                }
+            ),
+            call(
+                audience.meta['mc_id'],
+                {
+                    'default_value': '',
+                    'help_text': '',
+                    'name': 'customInt',
+                    'public': True,
+                    'required': False,
+                    'type': 'number'
+                }
+            ),
+        ]
     )
 
 

@@ -14,6 +14,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from mailchimp3 import MailChimp
 
 from .mailchimp_client_factory import MailchimpClientFactory
@@ -68,19 +70,30 @@ class MailchimpEmailService(domain.EmailService):
             names = list(merge_fields.keys())
             for k, v in meta.items():
                 if k not in names:
-                    merge_fields[k] = self._create_merge_field(client, audience, k)
+                    merge_fields[k] = self._create_merge_field(client, audience, k, v)
 
         return {v: meta[k] for k, v in merge_fields.items() if (k in meta and meta[k] is not None)}
 
     @staticmethod
-    def _create_merge_field(client: MailChimp, audience: domain.Audience, name: str):
+    def _create_merge_field(client: MailChimp, audience: domain.Audience, name: str, hint: any):
+        type_ = 'text'
+
+        if isinstance(hint, (int, float)):
+            type_ = 'number'
+
+        try:
+            datetime.fromisoformat(hint)
+            type_ = 'birthday' if name.lower().startswith('birth') else 'date'
+        except (ValueError, TypeError):
+            pass
+
         return client.lists.merge_fields.create(audience.meta['mc_id'], {
                 'default_value': '',
                 'help_text': '',
                 'name': name,
                 'public': True,
                 'required': False,
-                'type': 'text'
+                'type': type_
         })['tag']
 
     def _get_client(self, audience: domain.Audience):
