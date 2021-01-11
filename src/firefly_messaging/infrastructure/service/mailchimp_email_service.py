@@ -38,6 +38,7 @@ class MailchimpEmailService(domain.EmailService):
 
         try:
             payload['merge_fields'] = self._get_merge_fields(client, audience, meta)
+            payload['skip_merge_validation'] = True
         except (TypeError, AttributeError):
             pass
 
@@ -71,7 +72,7 @@ class MailchimpEmailService(domain.EmailService):
                 if k not in names:
                     merge_fields[k] = self._create_merge_field(client, audience, k)
 
-        return {v: meta[k] for k, v in merge_fields.items() if k in meta}
+        return {v: meta[k] for k, v in merge_fields.items() if (k in meta and meta[k] is not None)}
 
     @staticmethod
     def _create_merge_field(client: MailChimp, audience: domain.Audience, name: str):

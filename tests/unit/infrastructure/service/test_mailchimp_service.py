@@ -58,7 +58,7 @@ def test_add_contact_to_audience_with_existing_merge_fields(sut, mailchimp_clien
         'merge_fields': [
             {'name': 'First Name', 'tag': 'FNAME'},
             {'name': 'Last Name', 'tag': 'LNAME'},
-        ]
+        ],
     }
     sut.add_contact_to_audience(contact, audience, meta={'First Name': 'Bob', 'Last Name': 'Loblaw'})
 
@@ -70,7 +70,8 @@ def test_add_contact_to_audience_with_existing_merge_fields(sut, mailchimp_clien
             'merge_fields': {
                 'FNAME': 'Bob',
                 'LNAME': 'Loblaw'
-            }
+            },
+            'skip_merge_validation': True,
         },
     )
 
@@ -94,7 +95,8 @@ def test_add_contact_to_audience_with_extra_merge_fields(sut, mailchimp_client, 
             'merge_fields': {
                 'FNAME': 'Bob',
                 'LNAME': 'Loblaw'
-            }
+            },
+            'skip_merge_validation': True,
         },
     )
 
@@ -121,7 +123,8 @@ def test_add_contact_to_audience_with_non_existent_merge_fields(sut, mailchimp_c
                 'FNAME': 'Bob',
                 'LNAME': 'Loblaw',
                 'MERGE5': 'foobar',
-            }
+            },
+            'skip_merge_validation': True,
         },
     )
 
