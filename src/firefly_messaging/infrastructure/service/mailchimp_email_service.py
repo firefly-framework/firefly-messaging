@@ -92,9 +92,20 @@ class MailchimpEmailService(domain.EmailService):
 
     @staticmethod
     def _get_mc_merge_fields(client: MailChimp, audience: domain.Audience):
-        return {
-            x['name']: x['tag'] for x in client.lists.merge_fields.all(audience.meta['mc_id'])['merge_fields']
-        }
+        count = 25
+        offset = 0
+        ret = {}
+        while True:
+            merge_fields = client.lists.merge_fields.all(
+                audience.meta['mc_id'], count=count, offset=offset
+            )['merge_fields']
+            for x in merge_fields:
+                ret[x['name']] = x['tag']
+            if len(merge_fields) < count:
+                break
+            offset += count
+
+        return ret
 
     @staticmethod
     def _create_merge_field(client: MailChimp, audience: domain.Audience, name: str, hint: any):
