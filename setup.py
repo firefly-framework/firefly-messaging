@@ -22,7 +22,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='firefly-messaging',
-    version='0.1.15',
+    version='0.1.16',
     author="",
     author_email="",
     description="Put project description here.",

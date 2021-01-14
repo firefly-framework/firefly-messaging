@@ -68,7 +68,6 @@ class MailchimpEmailService(domain.EmailService):
         merge_fields = self._get_mc_merge_fields(client, audience)
 
         if create is True:
-            lock_key = f'mailchimp-tags-{audience.id}'
             names = list(merge_fields.keys())
             for k, v in meta.items():
                 if k not in names:
@@ -76,14 +75,15 @@ class MailchimpEmailService(domain.EmailService):
                     while True:
                         try:
                             attempts += 1
-                            with self._mutex(lock_key):
+                            with self._mutex(f'mailchimp-tags-{audience.id}', timeout=0):
                                 merge_fields[k] = self._create_merge_field(client, audience, k, v)
                                 break
                         except TimeoutError:
                             if attempts >= 5:
                                 break
                             sleep(2)
-                            names = list(self._get_mc_merge_fields(client, audience).keys())
+                            merge_fields = self._get_mc_merge_fields(client, audience)
+                            names = list(merge_fields.keys())
                             if k in names:
                                 break
 
