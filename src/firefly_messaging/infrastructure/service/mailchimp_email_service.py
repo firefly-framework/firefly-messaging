@@ -76,16 +76,15 @@ class MailchimpEmailService(domain.EmailService):
                         try:
                             attempts += 1
                             with self._mutex(f'mailchimp-tags-{audience.id}', timeout=0):
-                                merge_fields[k] = self._create_merge_field(client, audience, k, v)
-                                break
+                                merge_fields = self._get_mc_merge_fields(client, audience)
+                                names = list(merge_fields.keys())
+                                if k not in names:
+                                    merge_fields[k] = self._create_merge_field(client, audience, k, v)
+                            break
                         except TimeoutError:
                             if attempts >= 5:
                                 break
                             sleep(2)
-                            merge_fields = self._get_mc_merge_fields(client, audience)
-                            names = list(merge_fields.keys())
-                            if k in names:
-                                break
 
         return {v: meta[k] for k, v in merge_fields.items() if (k in meta and meta[k] is not None)}
 
