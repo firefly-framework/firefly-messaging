@@ -19,6 +19,7 @@ from time import sleep
 
 from mailchimp3 import MailChimp
 import firefly as ff
+from mailchimp3.mailchimpclient import MailChimpError
 
 from .mailchimp_client_factory import MailchimpClientFactory
 from ... import domain as domain
@@ -45,7 +46,12 @@ class MailchimpEmailService(domain.EmailService):
         except (TypeError, AttributeError):
             pass
 
-        member = client.lists.members.create(audience.meta['mc_id'], payload)
+        try:
+            member = client.lists.members.create(audience.meta['mc_id'], payload)
+        except MailChimpError as e:
+            if 'is already a list member' not in str(e):
+                raise e
+            member = client.lists.members.get(audience.meta['mc_id'], contact.email)
         audience.get_member_by_contact(contact).meta['mc_id'] = member['id']
 
     def add_tag_to_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
