@@ -15,8 +15,10 @@
 from __future__ import annotations
 
 from datetime import datetime
+from time import sleep
 
 from mailchimp3 import MailChimp
+import firefly as ff
 
 from .mailchimp_client_factory import MailchimpClientFactory
 from ... import domain as domain
@@ -24,6 +26,7 @@ from ... import domain as domain
 
 class MailchimpEmailService(domain.EmailService):
     _client_factory: MailchimpClientFactory = None
+    _mutex: ff.Mutex = None
 
     def add_contact_to_audience(self, contact: domain.Contact, audience: domain.Audience, meta: dict = None,
                                 tags: list = None):
@@ -62,17 +65,35 @@ class MailchimpEmailService(domain.EmailService):
         )
 
     def _get_merge_fields(self, client: MailChimp, audience: domain.Audience, meta: dict, create: bool = True):
-        merge_fields = {
-            x['name']: x['tag'] for x in client.lists.merge_fields.all(audience.meta['mc_id'])['merge_fields']
-        }
+        merge_fields = self._get_mc_merge_fields(client, audience)
 
         if create is True:
+            lock_key = f'mailchimp-tags-{audience.id}'
             names = list(merge_fields.keys())
             for k, v in meta.items():
                 if k not in names:
-                    merge_fields[k] = self._create_merge_field(client, audience, k, v)
+                    attempts = 0
+                    while True:
+                        try:
+                            attempts += 1
+                            with self._mutex(lock_key):
+                                merge_fields[k] = self._create_merge_field(client, audience, k, v)
+                                break
+                        except TimeoutError:
+                            if attempts >= 5:
+                                break
+                            sleep(2)
+                            names = list(self._get_mc_merge_fields(client, audience).keys())
+                            if k in names:
+                                break
 
         return {v: meta[k] for k, v in merge_fields.items() if (k in meta and meta[k] is not None)}
+
+    @staticmethod
+    def _get_mc_merge_fields(client: MailChimp, audience: domain.Audience):
+        return {
+            x['name']: x['tag'] for x in client.lists.merge_fields.all(audience.meta['mc_id'])['merge_fields']
+        }
 
     @staticmethod
     def _create_merge_field(client: MailChimp, audience: domain.Audience, name: str, hint: any):

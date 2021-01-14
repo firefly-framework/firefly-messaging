@@ -22,7 +22,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='firefly-messaging',
-    version='0.1.14',
+    version='0.1.15',
     author="",
     author_email="",
     description="Put project description here.",
@@ -33,7 +33,7 @@ setuptools.setup(
     },
     install_requires=[
         'firefly-dependency-injection>=0.1',
-        'firefly-framework>=1.1.16',
+        'firefly-framework>=1.1.28',
         'mailchimp3>=3.0.14'
     ],
     packages=setuptools.PEP420PackageFinder.find('src'),
