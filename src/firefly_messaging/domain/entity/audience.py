@@ -27,27 +27,11 @@ class Audience(ff.AggregateRoot):
     id: str = ff.id_()
     name: str = ff.required()
     tenant: domain.Tenant = ff.required()
-    members: List[domain.AudienceMember] = ff.list_()
     campaigns: List[domain.Campaign] = ff.list_()
     services: list = ff.list_(validators=ff.IsOneOf((MAILCHIMP,)))
     meta: dict = ff.dict_()
-
-    def get_member_by_contact(self, contact: domain.Contact) -> Optional[domain.AudienceMember]:
-        for member in self.members:
-            if member.contact.id == contact.id:
-                return member
 
     def get_campaign(self, id_: str) -> Optional[domain.Campaign]:
         for campaign in self.campaigns:
             if campaign.id == id_:
                 return campaign
-
-    def add_member(self, contact: domain.Contact, meta: dict = None, tags: list = None):
-        if self.get_member_by_contact(contact) is None:
-            self.members.append(
-                domain.AudienceMember(
-                    contact=contact,
-                    meta=meta or {},
-                    tags=tags or []
-                )
-            )

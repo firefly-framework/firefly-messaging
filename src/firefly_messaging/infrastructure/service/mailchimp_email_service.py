@@ -26,6 +26,7 @@ from ... import domain as domain
 
 
 class MailchimpEmailService(domain.EmailService):
+    _registry: ff.Registry = None
     _client_factory: MailchimpClientFactory = None
     _mutex: ff.Mutex = None
 
@@ -52,13 +53,14 @@ class MailchimpEmailService(domain.EmailService):
             if 'is already a list member' not in str(e):
                 raise e
             member = client.lists.members.get(audience.meta['mc_id'], contact.email)
-        audience.get_member_by_contact(contact).meta['mc_id'] = member['id']
+
+        self._get_audience_member(audience, contact).meta['mc_id'] = member['id']
 
     def add_tag_to_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
         client = self._get_client(audience)
         client.lists.members.tags.update(
             audience.meta['mc_id'],
-            audience.get_member_by_contact(contact).meta['mc_id'],
+            self._get_audience_member(audience, contact).meta['mc_id'],
             {'tags': [{'name': tag, 'status': 'active'}]}
         )
 
@@ -66,7 +68,7 @@ class MailchimpEmailService(domain.EmailService):
         client = self._get_client(audience)
         client.lists.members.tags.update(
             audience.meta['mc_id'],
-            audience.get_member_by_contact(contact).meta['mc_id'],
+            self._get_audience_member(audience, contact).meta['mc_id'],
             {'tags': [{'name': tag, 'status': 'inactive'}]}
         )
 
@@ -137,3 +139,8 @@ class MailchimpEmailService(domain.EmailService):
 
     def _get_client(self, audience: domain.Audience):
         return self._client_factory(audience.meta['mc_api_key'])
+
+    def _get_audience_member(self, audience: domain.Audience, contact: domain.Contact):
+        return self._registry(domain.AudienceMember).find(
+            lambda am: (am.audience == audience.id) & (am.contact == contact.id)
+        )

@@ -28,8 +28,8 @@ def test_add_contact_to_audience(system_bus, audience, contact, registry):
     audience: domain.Audience = registry(domain.Audience)[0]
     contact: domain.Contact = registry(domain.Contact)[0]
 
-    member = audience.get_member_by_contact(contact)
-    assert member.contact.id == contact.id
+    member = registry(domain.AudienceMember).find(lambda am: (am.audience == audience.id) & (am.contact == contact.id))
+    assert member.contact == contact.id
 
 
 def test_add_contact_to_audience_with_meta(system_bus, audience, contact, registry):
@@ -44,7 +44,7 @@ def test_add_contact_to_audience_with_meta(system_bus, audience, contact, regist
     audience: domain.Audience = registry(domain.Audience)[0]
     contact: domain.Contact = registry(domain.Contact)[0]
 
-    member = audience.get_member_by_contact(contact)
+    member = registry(domain.AudienceMember).find(lambda am: (am.audience == audience.id) & (am.contact == contact.id))
     assert member.meta['my_key'] == 'my_value'
 
 
@@ -58,7 +58,7 @@ def test_add_contact_to_audience_with_tags(system_bus, audience, contact, regist
     audience: domain.Audience = registry(domain.Audience)[0]
     contact: domain.Contact = registry(domain.Contact)[0]
 
-    member = audience.get_member_by_contact(contact)
+    member = registry(domain.AudienceMember).find(lambda am: (am.audience == audience.id) & (am.contact == contact.id))
     assert 'my_tag' in member.tags
 
 
@@ -77,7 +77,7 @@ def test_add_tag_to_audience_member(system_bus, audience, contact, registry):
     audience: domain.Audience = registry(domain.Audience)[0]
     contact: domain.Contact = registry(domain.Contact)[0]
 
-    member = audience.get_member_by_contact(contact)
+    member = registry(domain.AudienceMember).find(lambda am: (am.audience == audience.id) & (am.contact == contact.id))
 
     assert 'foo' in member.tags
 
@@ -103,6 +103,6 @@ def test_remove_tag_from_audience_member(system_bus, audience, contact, registry
     audience: domain.Audience = registry(domain.Audience)[0]
     contact: domain.Contact = registry(domain.Contact)[0]
 
-    member = audience.get_member_by_contact(contact)
+    member = registry(domain.AudienceMember).find(lambda am: (am.audience == audience.id) & (am.contact == contact.id))
 
     assert 'foo' not in member.tags

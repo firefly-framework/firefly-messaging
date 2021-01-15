@@ -45,7 +45,7 @@ def config():
     }
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture()
 def tenant(registry):
     tenants = registry(domain.Tenant)
     tenant = domain.Tenant(name='Firefly')
@@ -54,19 +54,37 @@ def tenant(registry):
     return tenant
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture()
 def audience(registry, tenant):
     audiences = registry(domain.Audience)
     audience = domain.Audience(
         name='My Audience',
         tenant=tenant,
+        meta={
+            'mc_api_key': 'abc123',
+            'mc_id': 'abc123',
+        },
     )
     audiences.append(audience)
     audiences.commit()
     return audience
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(autouse=True)
+def audience_member(registry, audience, contact):
+    audience_members = registry(domain.AudienceMember)
+    audience_member = domain.AudienceMember(
+        audience=audience.id,
+        contact=contact.id,
+        meta={'mc_id': 'abc123'},
+    )
+    audience_members.append(audience_member)
+    audience_members.commit()
+    audience_members.reset()
+    return audience_member
+
+
+@pytest.fixture()
 def contact(registry):
     contacts = registry(domain.Contact)
     contact = domain.Contact(

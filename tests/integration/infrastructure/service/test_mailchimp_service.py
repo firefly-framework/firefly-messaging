@@ -11,16 +11,29 @@
 #
 #  You should have received a copy of the GNU General Public License along with Firefly. If not, see
 #  <http://www.gnu.org/licenses/>.
+#
+#  This file is part of Firefly, a Python SOA framework built by JD Williams. Firefly is free software; you can
+#  redistribute it and/or modify it under the terms of the GNU General Public License as published by the
+#  Free Software Foundation; either version 3 of the License, or (at your option) any later version.
+#
+#  Firefly is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+#  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+#  Public License for more details. You should have received a copy of the GNU Lesser General Public
+#  License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#  You should have received a copy of the GNU General Public License along with Firefly. If not, see
+#  <http://www.gnu.org/licenses/>.
 
 from unittest.mock import MagicMock, call
 
 import pytest
 
+import firefly_messaging.domain as domain
 import firefly_messaging.infrastructure as infra
 from firefly_messaging.application.container import Container
 
 
-def test_add_contact_to_audience_basic(sut, mailchimp_client, audience, contact):
+def test_add_contact_to_audience_basic(sut, mailchimp_client, audience, contact, registry):
     mailchimp_client.lists.members.create.return_value = {'id': 'abc123'}
     sut.add_contact_to_audience(contact, audience)
 
@@ -31,10 +44,13 @@ def test_add_contact_to_audience_basic(sut, mailchimp_client, audience, contact)
             'status': 'subscribed',
         },
     )
-    assert audience.get_member_by_contact(contact).meta['mc_id'] == 'abc123'
+    registry(domain.AudienceMember).commit()
+    assert registry(domain.AudienceMember).find(
+        lambda am: (am.audience == audience.id) & (am.contact == contact.id)
+    ).meta['mc_id'] == 'abc123'
 
 
-def test_add_contact_to_audience_with_tags(sut, mailchimp_client, audience, contact):
+def test_add_contact_to_audience_with_tags(sut, mailchimp_client, audience, contact, registry):
     mailchimp_client.lists.members.create.return_value = {'id': 'abc123'}
     sut.add_contact_to_audience(contact, audience, tags=['tag1', 'tag2'])
 
@@ -46,7 +62,10 @@ def test_add_contact_to_audience_with_tags(sut, mailchimp_client, audience, cont
             'tags': ['tag1', 'tag2']
         },
     )
-    assert audience.get_member_by_contact(contact).meta['mc_id'] == 'abc123'
+    registry(domain.AudienceMember).commit()
+    assert registry(domain.AudienceMember).find(
+        lambda am: (am.audience == audience.id) & (am.contact == contact.id)
+    ).meta['mc_id'] == 'abc123'
 
 
 def test_add_contact_to_audience_with_existing_merge_fields(sut, mailchimp_client, audience, contact):
@@ -204,31 +223,36 @@ def test_add_contact_to_audience_with_non_existent_merge_fields(sut, mailchimp_c
     )
 
 
-def test_add_tag_to_audience_member(sut, mailchimp_client, audience, contact):
+def test_add_tag_to_audience_member(sut, mailchimp_client, audience, contact, registry):
     sut.add_tag_to_audience_member('my_tag', audience, contact)
+    registry(domain.AudienceMember).commit()
 
     mailchimp_client.lists.members.tags.update.assert_called_with(
         audience.meta['mc_id'],
-        audience.get_member_by_contact(contact).meta['mc_id'],
+        registry(domain.AudienceMember).find(
+            lambda am: (am.audience == audience.id) & (am.contact == contact.id)
+        ).meta['mc_id'],
         {'tags': [{'name': 'my_tag', 'status': 'active'}]}
     )
 
 
-def test_remove_tag_from_audience_member(sut, mailchimp_client, audience, contact):
+def test_remove_tag_from_audience_member(sut, mailchimp_client, audience, contact, registry):
     sut.remove_tag_from_audience_member('my_tag', audience, contact)
+    registry(domain.AudienceMember).commit()
 
     mailchimp_client.lists.members.tags.update.assert_called_with(
         audience.meta['mc_id'],
-        audience.get_member_by_contact(contact).meta['mc_id'],
+        registry(domain.AudienceMember).find(
+            lambda am: (am.audience == audience.id) & (am.contact == contact.id)
+        ).meta['mc_id'],
         {'tags': [{'name': 'my_tag', 'status': 'inactive'}]}
     )
 
 
 @pytest.fixture()
-def sut(mailchimp_client):
-    class Sut(infra.MailchimpEmailService):
-        pass
-    ret = Container().mock(Sut)
+def sut(mailchimp_client, container):
+    ret = container.mailchimp_email_service
+    ret._client_factory = MagicMock()
     ret._client_factory.return_value = mailchimp_client
     return ret
 

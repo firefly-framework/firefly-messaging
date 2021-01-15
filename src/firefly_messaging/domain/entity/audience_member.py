@@ -18,11 +18,10 @@ from typing import List
 
 import firefly as ff
 
-from .contact import Contact
 
-
-class AudienceMember(ff.Entity):
+class AudienceMember(ff.AggregateRoot):
     id: str = ff.id_()
-    contact: Contact = ff.required()
+    audience: str = ff.required()
+    contact: str = ff.required()
     tags: List[str] = ff.list_()
     meta: dict = ff.dict_()
