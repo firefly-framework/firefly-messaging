@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, date
 
 import firefly as ff
 
@@ -26,5 +26,5 @@ class Contact(ff.AggregateRoot):
     email: str = ff.optional(index=True)
     given_name: str = ff.optional()
     family_name: str = ff.optional()
-    birthdate: datetime = ff.optional()
+    birthdate: date = ff.optional()
     deleted_on: datetime = ff.optional()
