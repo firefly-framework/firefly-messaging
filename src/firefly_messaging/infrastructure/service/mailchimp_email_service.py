@@ -50,9 +50,12 @@ class MailchimpEmailService(domain.EmailService):
         try:
             member = client.lists.members.create(audience.meta['mc_id'], payload)
         except MailChimpError as e:
-            if 'is already a list member' not in str(e):
+            if 'Forgotten Email Not Subscribed' in str(e):
+                return
+            elif 'is already a list member' not in str(e):
                 raise e
             member = client.lists.members.get(audience.meta['mc_id'], contact.email)
+            client.lists.members.update(audience.meta['mc_id'], contact.email, payload)
 
         self._get_audience_member(audience, contact).meta['mc_id'] = member['id']
 
