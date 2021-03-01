@@ -57,6 +57,13 @@ class MailchimpEmailService(domain.EmailService):
             member = client.lists.members.get(audience.meta['mc_id'], contact.email)
             client.lists.members.update(audience.meta['mc_id'], contact.email, payload)
 
+        if tags is not None and len(tags) > 0:
+            client.lists.members.tags.update(
+                audience.meta['mc_id'],
+                member['id'],
+                {'tags': [{'name': t, 'status': 'active'} for t in tags]}
+            )
+
         self._get_audience_member(audience, contact).meta['mc_id'] = member['id']
 
     def add_tag_to_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
