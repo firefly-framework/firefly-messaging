@@ -24,64 +24,67 @@ from mailchimp3.mailchimpclient import MailChimpError
 from .mailchimp_client_factory import MailchimpClientFactory
 from ... import domain as domain
 
+CONCURRENCY_KEY = 'mailchimp-connections'
+
 
 class MailchimpEmailService(domain.EmailService):
     _registry: ff.Registry = None
     _client_factory: MailchimpClientFactory = None
     _mutex: ff.Mutex = None
+    _rate_limiter: ff.RateLimiter = None
 
     def add_contact_to_audience(self, contact: domain.Contact, audience: domain.Audience, meta: dict = None,
                                 tags: list = None):
-        client = self._get_client(audience)
-        payload = {
-            'email_address': contact.email,
-            'status': 'subscribed',
-        }
+        with self._rate_limiter(CONCURRENCY_KEY, max_concurrent=10):
+            client = self._get_client(audience)
+            payload = {
+                'email_address': contact.email,
+                'status_if_new': 'subscribed',
+            }
 
-        if tags is not None and len(tags) > 0:
-            payload['tags'] = tags
+            if tags is not None and len(tags) > 0:
+                payload['tags'] = tags
 
-        try:
-            payload['merge_fields'] = self._get_merge_fields(client, audience, meta)
-            payload['skip_merge_validation'] = True
-        except (TypeError, AttributeError):
-            pass
+            try:
+                payload['merge_fields'] = self._get_merge_fields(client, audience, meta)
+                payload['skip_merge_validation'] = True
+            except (TypeError, AttributeError):
+                pass
 
-        try:
-            member = client.lists.members.create(audience.meta['mc_id'], payload)
-        except MailChimpError as e:
-            args = e.args[0]
-            if 'Forgotten Email Not Subscribed' in str(e):
-                return
-            elif args['title'] != 'Member Exists':
-                raise e
-            member = client.lists.members.get(audience.meta['mc_id'], contact.email)
-            client.lists.members.update(audience.meta['mc_id'], contact.email, payload)
+            try:
+                member = client.lists.members.create_or_update(audience.meta['mc_id'], contact.email, payload)
+            except MailChimpError as e:
+                if 'Forgotten Email Not Subscribed' in str(e):
+                    return
+                else:
+                    raise e
 
-        if tags is not None and len(tags) > 0:
-            client.lists.members.tags.update(
-                audience.meta['mc_id'],
-                member['id'],
-                {'tags': [{'name': t, 'status': 'active'} for t in tags]}
-            )
+            if tags is not None and len(tags) > 0:
+                client.lists.members.tags.update(
+                    audience.meta['mc_id'],
+                    member['id'],
+                    {'tags': [{'name': t, 'status': 'active'} for t in tags]}
+                )
 
-        self._get_audience_member(audience, contact).meta['mc_id'] = member['id']
+            self._get_audience_member(audience, contact).meta['mc_id'] = member['id']
 
     def add_tag_to_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
-        client = self._get_client(audience)
-        client.lists.members.tags.update(
-            audience.meta['mc_id'],
-            self._get_audience_member(audience, contact).meta['mc_id'],
-            {'tags': [{'name': tag, 'status': 'active'}]}
-        )
+        with self._rate_limiter(CONCURRENCY_KEY, max_concurrent=10):
+            client = self._get_client(audience)
+            client.lists.members.tags.update(
+                audience.meta['mc_id'],
+                self._get_audience_member(audience, contact).meta['mc_id'],
+                {'tags': [{'name': tag, 'status': 'active'}]}
+            )
 
     def remove_tag_from_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
-        client = self._get_client(audience)
-        client.lists.members.tags.update(
-            audience.meta['mc_id'],
-            self._get_audience_member(audience, contact).meta['mc_id'],
-            {'tags': [{'name': tag, 'status': 'inactive'}]}
-        )
+        with self._rate_limiter(CONCURRENCY_KEY, max_concurrent=10):
+            client = self._get_client(audience)
+            client.lists.members.tags.update(
+                audience.meta['mc_id'],
+                self._get_audience_member(audience, contact).meta['mc_id'],
+                {'tags': [{'name': tag, 'status': 'inactive'}]}
+            )
 
     def _get_merge_fields(self, client: MailChimp, audience: domain.Audience, meta: dict, create: bool = True):
         merge_fields = self._get_mc_merge_fields(client, audience)
