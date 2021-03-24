@@ -44,12 +44,12 @@ class AddTagToAudienceMember(ff.ApplicationService):
         contact = contacts.find(contact_id)
         if contact is None:
             self.info('No contact found for contact_id: %s', contact_id)
-            return ff.NotFound()
+            raise ff.NotFound()
 
         audience: domain.Audience = self._registry(domain.Audience).find(audience_id)
         if audience is None:
             self.info('No audience found with id: %s', audience_id)
-            return ff.NotFound()
+            raise ff.NotFound()
 
         self._email_service.add_tag_to_audience_member(tag, audience, contact)
 
@@ -64,11 +64,11 @@ class RemoveTagFromAudienceMember(ff.ApplicationService):
         contact = contacts.find(contact_id)
         if contact is None:
             self.info('No contact found for contact_id: %s', contact_id)
-            return ff.NotFound()
+            raise ff.NotFound()
 
         audience: domain.Audience = self._registry(domain.Audience).find(audience_id)
         if audience is None:
             self.info('No audience found with id: %s', audience_id)
-            return ff.NotFound()
+            raise ff.NotFound()
 
         self._email_service.remove_tag_from_audience_member(tag, audience, contact)
