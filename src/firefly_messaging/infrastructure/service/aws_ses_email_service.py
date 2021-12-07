@@ -36,8 +36,6 @@ class AwsSESEmailService(domain.EmailService):
 
     def send_template_email(self, subject: str, text_body: str, html_body: str, from_address: str, to_address: List[str], cc_addresses: List[str], bcc_addresses: List[str]):
         client = self._get_client()
-        # print(client)
-        # print(subject, '\n', text_body, '\n', html_body, '\n', from_address, '\n', to_address, '\n', cc_addresses, '\n', bcc_addresses)
         response = client.send_email(
             Source=from_address,
             Destination={
@@ -60,80 +58,6 @@ class AwsSESEmailService(domain.EmailService):
             }
         )
         return response
-        # return [subject, text_body, html_body, from_address, to_address, cc_addresses, bcc_addresses]
 
     def _get_client(self):
         return self._client_factory()
-
-    # def _get_merge_fields(self, client: MailChimp, audience: domain.Audience, meta: dict, create: bool = True):
-    #     merge_fields = self._get_mc_merge_fields(client, audience)
-
-    #     if create is True:
-    #         for k, v in meta.items():
-    #             names = list(merge_fields.keys())
-    #             if k not in names:
-    #                 attempts = 0
-    #                 while True:
-    #                     try:
-    #                         attempts += 1
-    #                         with self._mutex(f'mailchimp-tags-{audience.id}', timeout=0):
-    #                             new_merge_fields = self._get_mc_merge_fields(client, audience)
-    #                             names = list(new_merge_fields.keys())
-    #                             if k not in names:
-    #                                 merge_fields[k] = self._create_merge_field(client, audience, k, v)
-    #                             else:
-    #                                 merge_fields[k] = new_merge_fields[k]
-    #                         break
-    #                     except TimeoutError:
-    #                         if attempts >= 5:
-    #                             break
-    #                         sleep(2)
-
-    #     return {v: meta[k] for k, v in merge_fields.items() if (k in meta and meta[k] is not None)}
-
-    # @staticmethod
-    # def _get_mc_merge_fields(client: MailChimp, audience: domain.Audience):
-    #     count = 25
-    #     offset = 0
-    #     ret = {}
-    #     while True:
-    #         merge_fields = client.lists.merge_fields.all(
-    #             audience.meta['mc_id'], count=count, offset=offset
-    #         )['merge_fields']
-    #         for x in merge_fields:
-    #             ret[x['name']] = x['tag']
-    #         if len(merge_fields) < count:
-    #             break
-    #         offset += count
-
-    #     return ret
-
-    # @staticmethod
-    # def _create_merge_field(client: MailChimp, audience: domain.Audience, name: str, hint: any):
-    #     type_ = 'text'
-
-    #     if isinstance(hint, (int, float)):
-    #         type_ = 'number'
-
-    #     try:
-    #         datetime.fromisoformat(hint)
-    #         type_ = 'date'
-    #     except (ValueError, TypeError):
-    #         pass
-
-    #     return client.lists.merge_fields.create(audience.meta['mc_id'], {
-    #             'default_value': '',
-    #             'help_text': '',
-    #             'name': name,
-    #             'public': True,
-    #             'required': False,
-    #             'type': type_
-    #     })['tag']
-
-    # def _get_client(self, audience: domain.Audience):
-    #     return self._client_factory(audience.meta['mc_api_key'])
-
-    # def _get_audience_member(self, audience: domain.Audience, contact: domain.Contact):
-    #     return self._registry(domain.AudienceMember).find(
-    #         lambda am: (am.audience == audience.id) & (am.contact == contact.id)
-    #     )
