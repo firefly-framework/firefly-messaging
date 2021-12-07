@@ -13,9 +13,11 @@
 #  <http://www.gnu.org/licenses/>.
 
 from __future__ import annotations
+from typing import List
 
 import firefly as ff
-import firefly_messaging.domain as domain
+from firefly_messaging import domain
+from firefly_messaging import infrastructure as infra
 
 
 @ff.command_handler()
@@ -72,3 +74,24 @@ class RemoveTagFromAudienceMember(ff.ApplicationService):
             raise ff.NotFound()
 
         self._email_service.remove_tag_from_audience_member(tag, audience, contact)
+
+@ff.command_handler()
+class SendSESEmail(ff.ApplicationService):
+    _registry: ff.Registry = None
+    _email_service: infra.AwsSESEmailService = None
+
+    def __call__(self, subject: str, text_body: str, html_body: str, from_address: str, to_address: List[str], cc_addresses: List[str] = [], bcc_addresses: List[str] = [], **kwargs):
+        resp = self._email_service.send_email(subject, text_body, html_body, from_address, to_address, cc_addresses, bcc_addresses)
+        return resp
+        # contacts = self._registry(domain.Contact)
+        # contact = contacts.find(contact_id)
+        # if contact is None:
+        #     self.info('No contact found for contact_id: %s', contact_id)
+        #     raise ff.NotFound()
+
+        # audience: domain.Audience = self._registry(domain.Audience).find(audience_id)
+        # if audience is None:
+        #     self.info('No audience found with id: %s', audience_id)
+        #     raise ff.NotFound()
+
+        # self._email_service.remove_tag_from_audience_member(tag, audience, contact)
