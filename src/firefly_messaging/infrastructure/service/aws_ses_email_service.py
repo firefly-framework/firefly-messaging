@@ -17,6 +17,7 @@ from __future__ import annotations
 from typing import List
 
 from ... import domain as domain
+from aws_ses_client_factory import AwsSESClientFactory
 
 
 
@@ -35,31 +36,31 @@ class AwsSESEmailService(domain.EmailService):
 
     def send_template_email(self, subject: str, text_body: str, html_body: str, from_address: str, to_address: List[str], cc_addresses: List[str], bcc_addresses: List[str]):
         client = self._get_client()
-        print(client)
-        print(subject, '\n', text_body, '\n', html_body, '\n', from_address, '\n', to_address, '\n', cc_addresses, '\n', bcc_addresses)
-        # response = client.send_email(
-        #     Source=from_address,
-        #     Destination={
-        #         'ToAddresses': to_address,
-        #         'CcAddresses': cc_addresses,
-        #         'BccAddresses': bcc_addresses,
-        #     },
-        #     Message={
-        #         'Subject': {
-        #             'Data': subject,
-        #         },
-        #         'Body': {
-        #             'Text': {
-        #                 'Data': text_body,
-        #             },
-        #             'Html': {
-        #                 'Data': html_body,
-        #             }
-        #         }
-        #     }
-        # )
-        # return response
-        return [subject, text_body, html_body, from_address, to_address, cc_addresses, bcc_addresses]
+        # print(client)
+        # print(subject, '\n', text_body, '\n', html_body, '\n', from_address, '\n', to_address, '\n', cc_addresses, '\n', bcc_addresses)
+        response = client.send_email(
+            Source=from_address,
+            Destination={
+                'ToAddresses': to_address,
+                'CcAddresses': cc_addresses,
+                'BccAddresses': bcc_addresses,
+            },
+            Message={
+                'Subject': {
+                    'Data': subject,
+                },
+                'Body': {
+                    'Text': {
+                        'Data': text_body,
+                    },
+                    'Html': {
+                        'Data': html_body,
+                    }
+                }
+            }
+        )
+        return response
+        # return [subject, text_body, html_body, from_address, to_address, cc_addresses, bcc_addresses]
 
     def _get_client(self):
         return self._client_factory()
