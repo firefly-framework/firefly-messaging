@@ -75,7 +75,7 @@ class RemoveTagFromAudienceMember(ff.ApplicationService):
 
         self._email_service.remove_tag_from_audience_member(tag, audience, contact)
 
-@ff.command_handler('firefly_messaging.SendSESEmail')
+@ff.command_handler()
 class SendSESEmail(ff.ApplicationService):
     _registry: ff.Registry = None
     _email_service: infra.AwsSESEmailService = None
