@@ -35,6 +35,7 @@ setuptools.setup(
         'firefly-dependency-injection>=0.1',
         # 'firefly-framework>=1.1.53',
         'firefly-framework @ git+https://github.com/Kyruski/firefly-framework.git@adding-cookies',
+        'firefly-aws>=1.2.4',
         'mailchimp3>=3.0.14'
     ],
     packages=setuptools.PEP420PackageFinder.find('src'),

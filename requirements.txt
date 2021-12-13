@@ -2,5 +2,6 @@ mailchimp3==3.0.14
 firefly-dependency-injection==1.0.0
 # firefly-framework==1.1.53
 firefly-framework @ git+https://github.com/Kyruski/firefly-framework.git@adding-cookies
+firefly-aws==1.2.4
 .
 boto3==1.20.21
