@@ -17,8 +17,7 @@ from __future__ import annotations
 from typing import List
 
 from ... import domain as domain
-from aws_ses_client_factory import AwsSESClientFactory
-
+from .aws_ses_client_factory import AwsSESClientFactory
 
 
 class AwsSESEmailService(domain.EmailService):
