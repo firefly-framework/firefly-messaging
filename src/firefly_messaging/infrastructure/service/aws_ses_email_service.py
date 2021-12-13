@@ -15,6 +15,8 @@
 from __future__ import annotations
 
 from typing import List
+import firefly as ff
+import re
 
 from ... import domain as domain
 from .aws_ses_client_factory import AwsSESClientFactory
@@ -22,6 +24,7 @@ from .aws_ses_client_factory import AwsSESClientFactory
 
 class AwsSESEmailService(domain.EmailService):
     _client_factory: AwsSESClientFactory = None
+    _email_regex: str = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
 
     def add_contact_to_audience(self, contact: domain.Contact, audience: domain.Audience, meta: dict = None,
                                 tags: list = None):
@@ -33,7 +36,12 @@ class AwsSESEmailService(domain.EmailService):
     def remove_tag_from_audience_member(self, tag: str, audience: domain.Audience, contact: domain.Contact):
         raise NotImplementedError()
 
-    def send_template_email(self, subject: str, text_body: str, html_body: str, from_address: str, to_address: List[str], cc_addresses: List[str], bcc_addresses: List[str]):
+    def send_email(self, subject: str, text_body: str, html_body: str, from_address: str, to_address: List[str], cc_addresses: List[str], bcc_addresses: List[str]):
+        if isinstance(to_address, str):
+            if re.match(self._email_regex, to_address):
+                to_address = [to_address]
+            else:
+                raise Exception('Invalid Destination address')
         client = self._get_client()
         response = client.send_email(
             Source=from_address,
