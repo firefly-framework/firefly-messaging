@@ -33,8 +33,7 @@ setuptools.setup(
     },
     install_requires=[
         'firefly-dependency-injection>=0.1',
-        # 'firefly-framework>=1.1.53',
-        'firefly-framework @ git+https://github.com/Kyruski/firefly-framework.git@adding-cookies',
+        'firefly-framework>=1.2.5',
         'firefly-aws>=1.2.5',
         'mailchimp3>=3.0.14'
     ],
