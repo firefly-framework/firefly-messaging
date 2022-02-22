@@ -14,15 +14,9 @@
 
 from __future__ import annotations
 
-import firefly_di as di
-import firefly_messaging.domain as domain
-import firefly_messaging.infrastructure as infra
+import boto3
 
 
-class Container(di.Container):
-    email_service_factory: domain.EmailServiceFactory = infra.EmailServiceFactory
-    email_service: domain.EmailService = infra.EmailService
-    mailchimp_client_factory: infra.MailchimpClientFactory = infra.MailchimpClientFactory
-    mailchimp_email_service: infra.MailchimpEmailService = infra.MailchimpEmailService
-    aws_ses_client_factory: infra.AwsSESClientFactory = infra.AwsSESClientFactory
-    aws_ses_email_service: infra.AwsSESEmailService = infra.AwsSESEmailService
+class AwsSESClientFactory:
+    def __call__(self):
+        return boto3.client('ses')

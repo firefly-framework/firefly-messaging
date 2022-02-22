@@ -16,3 +16,5 @@ from .email_service import EmailService
 from .email_service_factory import EmailServiceFactory
 from .mailchimp_client_factory import MailchimpClientFactory
 from .mailchimp_email_service import MailchimpEmailService
+from .aws_ses_client_factory import AwsSESClientFactory
+from .aws_ses_email_service import AwsSESEmailService

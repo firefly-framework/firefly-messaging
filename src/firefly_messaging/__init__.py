@@ -12,3 +12,6 @@
 #  You should have received a copy of the GNU General Public License along with Firefly. If not, see
 #  <http://www.gnu.org/licenses/>.
 
+from firefly_messaging.application import *
+from firefly_messaging.domain import *
+from firefly_messaging.infrastructure import *
